@@ -27,7 +27,7 @@ var app = {
     app.$roomSelect.on('change', app.handleRoomChange);
 
     // Fetch previous messages
-    // app.startSpinner();
+    app.startSpinner();
     app.fetch(false);
 
     // Poll for new messages
@@ -37,7 +37,7 @@ var app = {
   },
 
   send: function(message) {
-    // app.startSpinner();
+    app.startSpinner();
 
     // POST the message to the server
     $.ajax({
@@ -64,6 +64,7 @@ var app = {
       data: { order: '-createdAt' },
       contentType: 'application/json',
       success: function(data) {
+        data = JSON.parse(data);
         // Don't bother if we have nothing to work with
         if (!data.results || !data.results.length) { return; }
 
@@ -74,7 +75,7 @@ var app = {
         var mostRecentMessage = data.results[data.results.length - 1];
 
         // Only bother updating the DOM if we have a new message
-        if (mostRecentMessage.objectId !== app.lastMessageId) {
+        if (mostRecentMessage.text !== app.lastMessageId) {
           // Update the UI with the fetched rooms
           app.renderRoomList(data.results);
 
@@ -82,7 +83,7 @@ var app = {
           app.renderMessages(data.results, animate);
 
           // Store the ID of the most recent message
-          app.lastMessageId = mostRecentMessage.objectId;
+          app.lastMessageId = mostRecentMessage.text;
         }
       },
       error: function(error) {
@@ -98,7 +99,7 @@ var app = {
   renderMessages: function(messages, animate) {
     // Clear existing messages`
     app.clearMessages();
-    // app.stopSpinner();
+    app.stopSpinner();
     if (Array.isArray(messages)) {
       // Add all fetched messages that are in our current room
       messages
@@ -204,7 +205,7 @@ var app = {
         app.$roomSelect.val(roomname);
       }
     } else {
-      // app.startSpinner();
+      app.startSpinner();
       // Store as undefined for empty names
       app.roomname = app.$roomSelect.val();
     }

@@ -42,16 +42,10 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  
-  // var req = new stubs.request('/classes/messages', 'POST', stubMsg);
-  // var res = new stubs.response();
-  
-  console.log(request.url);
-  
+    
   if (request.url.indexOf('/classes/messages') === -1) {
     statusCode = 404;
     var requestResponse = 'Hello World';
-    console.log('404 error');
   } else {  
 
     // See the note below about CORS headers.
@@ -70,7 +64,6 @@ var requestHandler = function(request, response) {
       
       request.on('data', (chunk) => {
         if (typeof chunk === 'string') {
-          console.log(chunk);
           chunkIsString = true;
           body = JSON.parse(chunk);
           responseResults.results.push(body);
@@ -78,21 +71,10 @@ var requestHandler = function(request, response) {
       });
       
       if (!chunkIsString) {
-        request.on('data', (chunk) => {
-          
-          console.log('chunk: ', chunk, 'type is: ', typeof(chunk));
-          
+        request.on('data', (chunk) => {          
           body.push(chunk);
-          
-          //username='aaron'&
-          //buffer <52 12 12 32
-          //'{"hello": "world"}'
-          
-          
         }).on('end', () => {
           body = Buffer.concat(body).toString();
-          console.log(body);
-          
           if (body[0] !== '{' && body[body.length - 1] !== '}') {
             body = body.split('&');
             body.forEach((prop) => {
@@ -102,14 +84,12 @@ var requestHandler = function(request, response) {
               }
             });
           } else {
-            console.log('in else if');
             obj = body;
             obj = JSON.parse(obj);
           }  
           responseResults.results.push(obj);
         });  
         
-        console.log('about to push', obj, 'type is: ', typeof(obj));
       // at this point, `body` has the entire request body stored in it as a string
       //after stringify {"username":"Jono","message":"Do my bidding!"}
       }
@@ -118,11 +98,6 @@ var requestHandler = function(request, response) {
     // statusCode = 201;
     headers['Content-Type'] = 'application/JSON';
   }
-  
-  
-  // console.log('current database:', responseResults);
-  // console.log('statusCode: ', statusCode);
-  
   
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
