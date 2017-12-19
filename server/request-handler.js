@@ -128,17 +128,3 @@ var requestHandler = function(request, response) {
 // client from this domain by setting up static file serving.
 
 exports.requestHandler = requestHandler;
-    // responseResults.results.push();
-    // request.on('data', function(chunk) {
-    //   // console.log('Received body data:');
-    //   var messageString = chunk.toString();
-    //   // username=aaron&text=hi&roomname=room
-    //   var obj = {};
-    //   messageString = messageString.split('&');
-    //   messageString.forEach((prop) => {
-    //     var tuple = prop.split('=');
-    //     obj[tuple[0]] = tuple[1];
-    //   });
-    //   responseResults.results.push(obj);
-    //   console.log(responseResults);
-    // });

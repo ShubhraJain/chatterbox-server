@@ -59,7 +59,6 @@ describe('server', function() {
       // Now if we request the log, that message we posted should be there:
       request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
         var messages = JSON.parse(body).results;
-        console.log('get response data: ' + messages);
         expect(messages[0].username).to.equal('Jono');
         expect(messages[0].text).to.equal('Do my bidding!');
         done();
@@ -73,6 +72,52 @@ describe('server', function() {
       done();
     });
   });
-
-
+  
+  it('Should create a new room if the roomname is not in the database', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'testRoomUser',
+        text: 'How is this room doin!',
+        roomname: 'testRoom'
+      }
+    };
+    request(requestParams, function(error, response, body) {
+    // Now if we request the log, that message we posted should be there:
+      request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        console.log('get response data: ' + messages);
+        
+        let roomList = [];
+        messages.forEach(message => !roomList.includes(message.roomname) && roomList.push(message.roomname));
+        expect(roomList.includes('testRoom')).to.equal(true);
+        done();
+      });
+    });
+  });
+  
+  it('Should store and retrieve messages from specific rooms', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'testRoomUser2',
+        text: 'Anyone there? :(',
+        roomname: 'testRoom'
+      }
+    };
+    request(requestParams, function(error, response, body) {
+    // Now if we request the log, that message we posted should be there:
+      request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        console.log('get response data: ' + messages);
+        
+        messages = messages.filter(message => message.roomname === 'testRoom');
+        
+        expect(messages[messages.length - 1].roomname).to.equal('testRoom');
+        expect(messages[messages.length - 1].text).to.equal('Anyone there? :(');
+        done();
+      });
+    });
+  });
+  
 });
