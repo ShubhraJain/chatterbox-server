@@ -70,6 +70,7 @@ var requestHandler = function(request, response) {
       
       request.on('data', (chunk) => {
         if (typeof chunk === 'string') {
+          console.log(chunk);
           chunkIsString = true;
           body = JSON.parse(chunk);
           responseResults.results.push(body);
@@ -82,8 +83,15 @@ var requestHandler = function(request, response) {
           console.log('chunk: ', chunk, 'type is: ', typeof(chunk));
           
           body.push(chunk);
+          
+          //username='aaron'&
+          //buffer <52 12 12 32
+          //'{"hello": "world"}'
+          
+          
         }).on('end', () => {
           body = Buffer.concat(body).toString();
+          console.log(body);
           
           if (body[0] !== '{' && body[body.length - 1] !== '}') {
             body = body.split('&');
@@ -98,8 +106,9 @@ var requestHandler = function(request, response) {
             obj = body;
             obj = JSON.parse(obj);
           }  
+          responseResults.results.push(obj);
         });  
-        responseResults.results.push(obj);
+        
         console.log('about to push', obj, 'type is: ', typeof(obj));
       // at this point, `body` has the entire request body stored in it as a string
       //after stringify {"username":"Jono","message":"Do my bidding!"}
