@@ -33,66 +33,91 @@ var requestHandler = function(request, response) {
 
   // Do some basic logging.
   //
+  
+  // The outgoing status.
+  var statusCode = 200;
+  var headers = defaultCorsHeaders;
+  console.log('Serving request type ' + request.method + ' for url ' + request.url);
+  
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  // console.log(request);
   
-  // var url = '/classes/messages';
-
-  // The outgoing status.
-  var statusCode = 200;
-
-  // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
-
-  // Tell the client we are sending them plain text.
-  //
-  var requestResponse = 'Hello World';
+  // var req = new stubs.request('/classes/messages', 'POST', stubMsg);
+  // var res = new stubs.response();
   
-  if (request.method === 'GET') {
-    requestResponse = JSON.stringify(responseResults);
-  } else if (request.method === 'POST') {
-    // responseResults.results.push();
-    // request.on('data', function(chunk) {
-    //   // console.log('Received body data:');
-    //   var messageString = chunk.toString();
-    //   // username=aaron&text=hi&roomname=room
-    //   var obj = {};
-    //   messageString = messageString.split('&');
-    //   messageString.forEach((prop) => {
-    //     var tuple = prop.split('=');
-    //     obj[tuple[0]] = tuple[1];
-    //   });
-    //   responseResults.results.push(obj);
-    //   console.log(responseResults);
-    // });
-    let body = [];
-    var obj = {};
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    }).on('end', () => {
-      body = Buffer.concat(body).toString();
-      body = body.split('&');
-      body.forEach((prop) => {
-        var tuple = prop.split('=');
-        obj[tuple[0]] = tuple[1];
-        
-      });
-      // at this point, `body` has the entire request body stored in it as a string
+  console.log(request.url);
+  
+  if (request.url.indexOf('/classes/messages') === -1) {
+    statusCode = 404;
+    var requestResponse = 'Hello World';
+    console.log('404 error');
+  } else {  
+
+    // See the note below about CORS headers.
+
+    // Tell the client we are sending them plain text.
+    //
+    var requestResponse = 'Hello World';
+    
+    if (request.method === 'GET') {
+      requestResponse = JSON.stringify(responseResults);
+      statusCode = 200;
+    } else if (request.method === 'POST') {
+      let body = [];
+      var obj = {};
+      var chunkIsString = false;
       
-    });
-    responseResults.results.push(obj);
-    statusCode = 201;
+      request.on('data', (chunk) => {
+        if (typeof chunk === 'string') {
+          chunkIsString = true;
+          body = JSON.parse(chunk);
+          responseResults.results.push(body);
+        }
+      });
+      
+      if (!chunkIsString) {
+        request.on('data', (chunk) => {
+          
+          console.log('chunk: ', chunk, 'type is: ', typeof(chunk));
+          
+          body.push(chunk);
+        }).on('end', () => {
+          body = Buffer.concat(body).toString();
+          
+          if (body[0] !== '{' && body[body.length - 1] !== '}') {
+            body = body.split('&');
+            body.forEach((prop) => {
+              var tuple = prop.split('=');
+              if (tuple.length === 2) {
+                obj[tuple[0]] = tuple[1];
+              }
+            });
+          } else {
+            console.log('in else if');
+            obj = body;
+            obj = JSON.parse(obj);
+          }  
+        });  
+        responseResults.results.push(obj);
+        console.log('about to push', obj, 'type is: ', typeof(obj));
+      // at this point, `body` has the entire request body stored in it as a string
+      //after stringify {"username":"Jono","message":"Do my bidding!"}
+      }
+      statusCode = 201;
+    }
+    // statusCode = 201;
+    headers['Content-Type'] = 'application/JSON';
   }
   
   
-  console.log('current database:', responseResults);
+  // console.log('current database:', responseResults);
   // console.log('statusCode: ', statusCode);
+  
+  
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'application/JSON';
+  headers['Content-Type'] = 'text/plain';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -119,3 +144,17 @@ var requestHandler = function(request, response) {
 // client from this domain by setting up static file serving.
 
 exports.requestHandler = requestHandler;
+    // responseResults.results.push();
+    // request.on('data', function(chunk) {
+    //   // console.log('Received body data:');
+    //   var messageString = chunk.toString();
+    //   // username=aaron&text=hi&roomname=room
+    //   var obj = {};
+    //   messageString = messageString.split('&');
+    //   messageString.forEach((prop) => {
+    //     var tuple = prop.split('=');
+    //     obj[tuple[0]] = tuple[1];
+    //   });
+    //   responseResults.results.push(obj);
+    //   console.log(responseResults);
+    // });
